@@ -181,15 +181,21 @@ function goFight() {
   update(locations[3]);
   monsterHealth = monsters[fighting].health;
   monsterStats.style.display = "block";
+  monsterStats.style.animation = 'fadeIn 0.3s ease-in';
   monsterName.innerText = monsters[fighting].name;
   monsterHealthText.innerText = monsterHealth;
 }
 
 function attack() {
+  attackSound.play();
+  text.style.animation = 'none';
+  text.offsetHeight; // Trigger reflow
+  text.style.animation = 'fadeIn 0.3s ease-in';
   text.innerText = "The " + monsters[fighting].name + " attacks.";
   text.innerText += " You attack it with your " + weapons[currentWeapon].name + ".";
   health -= getMonsterAttackValue(monsters[fighting].level);
   if (isMonsterHit()) {
+    hitSound.play();
     monsterHealth -= weapons[currentWeapon].power + Math.floor(Math.random() * xp) + 1;    
   } else {
     text.innerText += " You miss.";
@@ -210,6 +216,11 @@ function attack() {
   if (Math.random() <= .1 && inventory.length !== 1) {
     text.innerText += " Your " + inventory.pop() + " breaks.";
     currentWeapon--;
+  }
+  if (isMonsterHit()) {
+    monsterStats.style.animation = 'none';
+    monsterStats.offsetHeight;
+    monsterStats.style.animation = 'fadeIn 0.3s ease-in';
   }
 }
 
@@ -269,9 +280,11 @@ function pickEight() {
 }
 function updateHealthBar() {
     if (health <= 30) {
-        healthText.classList('color', 'red');
+        healthText.className = 'health-low';
+    } else if (health <= 70) {
+        healthText.className = 'health-medium';
     } else {
-        healthText.classList('color', 'green');
+        healthText.className = 'health-high';
     }
 }
 function pick(guess) {
@@ -296,3 +309,26 @@ function pick(guess) {
     }
   }
 }
+
+// Add sound effects (optional)
+const attackSound = new Audio('https://www.soundjay.com/misc/sounds/sword-swing-1.mp3');
+const hitSound = new Audio('https://www.soundjay.com/misc/sounds/hit-01.mp3');
+
+function createShootingStar() {
+    const star = document.createElement('div');
+    star.className = 'shooting-star';
+    star.style.top = Math.random() * window.innerHeight + 'px';
+    document.body.appendChild(star);
+    
+    // Remove the star after animation
+    setTimeout(() => {
+        star.remove();
+    }, 5000);
+}
+
+// Create shooting stars randomly
+setInterval(() => {
+    if (Math.random() < 0.3) { // 30% chance every 5 seconds
+        createShootingStar();
+    }
+}, 5000);
